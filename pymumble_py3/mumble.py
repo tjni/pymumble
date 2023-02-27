@@ -25,7 +25,7 @@ class Mumble(threading.Thread):
     basically a thread
     """
 
-    def __init__(self, host, user, port=64738, password='', certfile=None, keyfile=None, reconnect=False, tokens=None, stereo=False, debug=False):
+    def __init__(self, host, user, port=64738, password='', certfile=None, keyfile=None, reconnect=False, tokens=None, stereo=False, debug=False, client_type=0):
         """
         host=mumble server hostname or address
         port=mumble server port
@@ -37,6 +37,7 @@ class Mumble(threading.Thread):
         tokens=channel access tokens as a list of strings
         stereo=enable stereo transmission
         debug=if True, send debugging messages (lot of...) to the stdout
+        client_type=if 1, flag connection as bot
         """
         # TODO: use UDP audio
         threading.Thread.__init__(self)
@@ -68,6 +69,7 @@ class Mumble(threading.Thread):
         self.tokens = tokens
         self.__opus_profile = PYMUMBLE_AUDIO_TYPE_OPUS_PROFILE
         self.stereo = stereo
+        self.client_type = client_type
 
         if stereo:
             self.Log.debug("Working in STEREO mode.")
@@ -185,6 +187,7 @@ class Mumble(threading.Thread):
             authenticate.password = self.password
             authenticate.tokens.extend(self.tokens)
             authenticate.opus = True
+            authenticate.client_type = self.client_type
             self.Log.debug("sending: authenticate: %s", authenticate)
             self.send_message(PYMUMBLE_MSG_TYPES_AUTHENTICATE, authenticate)
         except socket.error:
