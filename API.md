@@ -213,7 +213,7 @@ Return a `SoundChunk` object (the next one) but do not discard it. Useful to che
 
 It contains a sound unit, as received from the server. It as several properties
 
-Get the PCM buffer for this sound, in 16 bits signed mono little-endian 48000Hz format :
+Get the PCM buffer for this sound, in 16 bits signed mono/stereo little-endian 48000Hz format :
 
 > `SoundChunk.pcm`
 
@@ -407,7 +407,7 @@ Return the current length of an audio packet in secs.
 
 > `Mumble.sound_output.get_audio_per_packet()`
 
-Add PCM sound (16 bites mono 48000Hz little-endian encoded) to the outgoing queue.
+Add PCM sound (16 bites mono/stereo 48000Hz little-endian encoded) to the outgoing queue.
 
 > `Mumble.sound_output.add_sound(string)`
 
