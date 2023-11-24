@@ -19,6 +19,21 @@ from . import tools
 from . import mumble_pb2
 
 
+def _wrap_socket(sock, keyfile=None, certfile=None, verify_mode=ssl.CERT_NONE, server_hostname=None):
+    try:
+        ssl_context = ssl.create_default_context()
+        if certfile:
+            ssl_context.load_cert_chain(certfile, keyfile)
+        ssl_context.check_hostname = (verify_mode != ssl.CERT_NONE) and (server_hostname is not None)
+        ssl_context.verify_mode = verify_mode
+        return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+    except AttributeError:
+        try:
+            return ssl.wrap_socket(sock, keyfile, certfile, cert_reqs=verify_mode, ssl_version=ssl.PROTOCOL_TLS)
+        except AttributeError:
+            return ssl.wrap_socket(sock, keyfile, certfile, cert_reqs=verify_mode, ssl_version=ssl.PROTOCOL_TLSv1)
+
+
 class Mumble(threading.Thread):
     """
     Mumble client library main object.
@@ -161,10 +176,9 @@ class Mumble(threading.Thread):
             self.connected = PYMUMBLE_CONN_STATE_FAILED
             return self.connected
 
-        try:
-            self.control_socket = ssl.wrap_socket(std_sock, certfile=self.certfile, keyfile=self.keyfile, ssl_version=ssl.PROTOCOL_TLS)
-        except AttributeError:
-            self.control_socket = ssl.wrap_socket(std_sock, certfile=self.certfile, keyfile=self.keyfile, ssl_version=ssl.PROTOCOL_TLSv1)
+        # FIXME: Default verify_mode and server_hostname are not safe, as no
+        #        certificate checks are performed.
+        self.control_socket = _wrap_socket(std_sock, self.keyfile, self.certfile)
         try:
             self.control_socket.connect((self.host, self.port))
             self.control_socket.setblocking(False)
